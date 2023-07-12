@@ -1,5 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert').strict;
+const dboper = require('./operations');
 
 //const url = 'mongodb://localhost:27017/';
 //idk why, but this only works with specified url below
@@ -13,23 +14,53 @@ MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
 
 	const db = client.db(dbname);
 
+	//just for clean testing purposes, obv wouldn't drop actual collection
 	db.dropCollection('campsites', (err, result) => {
 		assert.strictEqual(err, null);
 		console.log('Dropped Collection', result);
 
-		const collection = db.collection('campsites');
-
-		collection.insertOne(
+		//4 params (db, insert, collection, callback), callback called after inserting documents
+		dboper.insertDocument(
+			db,
 			{ name: 'Breadcrumb Trail Campground', description: 'Test' },
-			(err, result) => {
-				assert.strictEqual(err, null);
+			'campsites',
+			(result) => {
 				console.log('Insert Document:', result.ops);
+				//
+				dboper.findDocuments(db, 'campsites', (docs) => {
+					console.log('Found Documents: ', docs);
 
-				collection.find().toArray((err, docs) => {
-					assert.strictEqual(err, null);
-					console.log('Found Documents:', docs);
+					//find field in the db, with name and information to update, collection name, with a callback to log the number of results modified
+					dboper.updateDocument(
+						db,
+						{ name: 'Breadcrumb Trail Campground' },
+						{ description: 'Updated Test Description' },
+						'campsites',
+						(result) => {
+							console.log(
+								console.log(
+									'Updated Document Count:',
+									result.result.nModified
+								)
+							);
+							dboper.findDocuments(db, 'campsites', (docs) => {
+								console.log('Found Documents: ', docs);
+								dboper.removeDocument(
+									db,
+									{ name: 'Breadcrumb Trail Campground' },
+									'campsites',
+									(result) => {
+										console.log(
+											'Deleted Document Count: ',
+											result.deletedCount
+										);
 
-					client.close();
+										client.close();
+									}
+								);
+							});
+						}
+					);
 				});
 			}
 		);
