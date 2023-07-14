@@ -24,24 +24,22 @@ MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
 			db,
 			{ name: 'Breadcrumb Trail Campground', description: 'Test' },
 			'campsites',
+			//callback
 			(result) => {
 				console.log('Insert Document:', result.ops);
 				//
 				dboper.findDocuments(db, 'campsites', (docs) => {
 					console.log('Found Documents: ', docs);
-
 					//find field in the db, with name and information to update, collection name, with a callback to log the number of results modified
 					dboper.updateDocument(
 						db,
 						{ name: 'Breadcrumb Trail Campground' },
 						{ description: 'Updated Test Description' },
 						'campsites',
+						//callback
 						(result) => {
 							console.log(
-								console.log(
-									'Updated Document Count:',
-									result.result.nModified
-								)
+								console.log('Updated Document Count:', result.result.nModified)
 							);
 							dboper.findDocuments(db, 'campsites', (docs) => {
 								console.log('Found Documents: ', docs);
@@ -49,12 +47,12 @@ MongoClient.connect(url, { useUnifiedTopology: true }, (err, client) => {
 									db,
 									{ name: 'Breadcrumb Trail Campground' },
 									'campsites',
+									//callback
 									(result) => {
 										console.log(
 											'Deleted Document Count: ',
 											result.deletedCount
 										);
-
 										client.close();
 									}
 								);
